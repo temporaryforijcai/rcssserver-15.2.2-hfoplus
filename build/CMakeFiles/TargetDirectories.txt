@@ -1,7 +1,0 @@
-/home/zyegao/projects/MRL/RoboCup2D/rcssserver-15.2.2-hfoplus/build/CMakeFiles/rebuild_cache.dir
-/home/zyegao/projects/MRL/RoboCup2D/rcssserver-15.2.2-hfoplus/build/CMakeFiles/rcssgz.dir
-/home/zyegao/projects/MRL/RoboCup2D/rcssserver-15.2.2-hfoplus/build/CMakeFiles/rcssclangparser.dir
-/home/zyegao/projects/MRL/RoboCup2D/rcssserver-15.2.2-hfoplus/build/CMakeFiles/rcssconfparser.dir
-/home/zyegao/projects/MRL/RoboCup2D/rcssserver-15.2.2-hfoplus/build/CMakeFiles/rcssnet.dir
-/home/zyegao/projects/MRL/RoboCup2D/rcssserver-15.2.2-hfoplus/build/CMakeFiles/rcssserver.dir
-/home/zyegao/projects/MRL/RoboCup2D/rcssserver-15.2.2-hfoplus/build/CMakeFiles/edit_cache.dir
