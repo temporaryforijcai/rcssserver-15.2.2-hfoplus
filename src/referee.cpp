@@ -54,6 +54,13 @@ const char * HFORef::doneMsg = "HFO_FINISHED";
 const char * HFORef::inGameMsg = "IN_GAME";
 const int HFORef::TURNOVER_TIME = 2;
 
+const char * CatchingPointRef::oocMsg = "OUT_OF_CHANGES";
+const char * CatchingPointRef::ootMsg = "OUT_OF_TIME";
+const char * CatchingPointRef::apgMsg = "ALL_POINTS_GET";
+const char * CatchingPointRef::doneMsg = "CATCHINGPOINT_FINISHED";
+const char * CatchingPointRef::inGameMsg = "IN_GAME";
+const int CatchingPointRef::TURNOVER_TIME = 2;
+
 PVector
 Referee::truncateToPitch( PVector ball_pos )
 {
@@ -488,7 +495,7 @@ Referee::crossGoalLine( const Side side,
 void
 TimeRef::analyse()
 {
-    if ( ServerParam::instance().hfoMode() )
+    if ( ServerParam::instance().hfoMode() || ServerParam::instance().catchingpointMode())
     {
         return;
     }
@@ -944,7 +951,7 @@ Referee::checkFoul( const Player & tackler,
 void
 BallStuckRef::analyse()
 {
-    if ( ServerParam::instance().hfoMode() )
+    if ( ServerParam::instance().hfoMode() || ServerParam::instance().catchingpointMode())
     {
         return;
     }
@@ -1049,7 +1056,7 @@ OffsideRef::ballTouched( const Player & player )
 void
 OffsideRef::analyse()
 {
-    if ( ServerParam::instance().hfoMode() )
+    if ( ServerParam::instance().hfoMode() || ServerParam::instance().catchingpointMode())
     {
         return;
     }
@@ -1308,7 +1315,7 @@ OffsideRef::setOffsideMark( const Player & kicker )
 void
 OffsideRef::callOffside()
 {
-    if ( ServerParam::instance().hfoMode() )
+    if ( ServerParam::instance().hfoMode() || ServerParam::instance().catchingpointMode())
     {
         return;
     }
@@ -1591,7 +1598,7 @@ FreeKickRef::ballTouched( const Player & player )
 void
 FreeKickRef::analyse()
 {
-    if ( ServerParam::instance().hfoMode() )
+    if ( ServerParam::instance().hfoMode() || ServerParam::instance().catchingpointMode())
     {
         return;
     }
@@ -1954,7 +1961,7 @@ const int TouchRef::AFTER_GOAL_WAIT = 50;
 void
 TouchRef::analyse()
 {
-    if ( ServerParam::instance().hfoMode() )
+    if ( ServerParam::instance().hfoMode() || ServerParam::instance().catchingpointMode())
     {
         return;
     }
@@ -2331,7 +2338,7 @@ CatchRef::ballTouched( const Player & player )
 void
 CatchRef::ballCaught( const Player & catcher )
 {
-    if ( ServerParam::instance().hfoMode() )
+    if ( ServerParam::instance().hfoMode() || ServerParam::instance().catchingpointMode())
     {
         return;
     }
@@ -2441,7 +2448,7 @@ CatchRef::ballPunched( const Player & catcher )
 void
 CatchRef::analyse()
 {
-    if ( ServerParam::instance().hfoMode() )
+    if ( ServerParam::instance().hfoMode() || ServerParam::instance().catchingpointMode())
     {
         return;
     }
@@ -2618,7 +2625,7 @@ void
 FoulRef::tackleTaken( const Player & tackler,
                       const bool foul )
 {
-    if ( ServerParam::instance().hfoMode() )
+    if ( ServerParam::instance().hfoMode() || ServerParam::instance().catchingpointMode())
     {
         return;
     }
@@ -2651,7 +2658,7 @@ FoulRef::tackleTaken( const Player & tackler,
 void
 FoulRef::analyse()
 {
-    if ( ServerParam::instance().hfoMode() )
+    if ( ServerParam::instance().hfoMode() || ServerParam::instance().catchingpointMode())
     {
         return;
     }
@@ -3335,7 +3342,7 @@ PenaltyRef::PenaltyRef( Stadium& stadium )
 void
 PenaltyRef::analyse()
 {
-    if ( ServerParam::instance().hfoMode() )
+    if ( ServerParam::instance().hfoMode() || ServerParam::instance().catchingpointMode())
     {
         return;
     }
@@ -3637,7 +3644,7 @@ PenaltyRef::handleTimer( const bool left_move_check,
 void
 PenaltyRef::ballCaught( const Player & catcher )
 {
-    if ( ServerParam::instance().hfoMode() )
+    if ( ServerParam::instance().hfoMode() || ServerParam::instance().catchingpointMode())
     {
         return;
     }
@@ -4391,4 +4398,244 @@ PenaltyRef::getCandidateTaker()
     }
 
     return candidate;
+}
+
+//************
+// CatchingPointRef
+//************
+
+CatchingPointRef::CatchingPointRef( Stadium & stadium )
+    : Referee( stadium ),
+      M_episode( 0 ),
+      M_catchers( 0 ),
+      M_points( 0 ),
+      M_time( 0 ),
+      M_episode_over_time( -1 ),
+      M_rng()
+{
+    // Generate vector of offsets used when resetting the field.
+    float offset_x[10] = {-1, -1, 1, 1, 0, 0, -2, -2, 2, 2};
+    float offset_y[10] = {-1, 1, 1, -1, 2, -2, -2, 2, 2, -2};
+    for (int i = 0; i < 10; ++i)
+    {
+        M_offsets.push_back(std::make_pair(offset_x[i], offset_y[i]));
+    }
+}
+bool CatchingPointRef::outofchanges(){
+     const Stadium::PlayerCont::const_iterator end = M_stadium.players().end();
+            for ( Stadium::PlayerCont::const_iterator p = M_stadium.players().begin();
+                  p != end;
+                  ++p )
+            {
+                if ( ! (*p)->isEnabled() ) continue;
+                if ((*p)->catchpointCount() > 5){
+                    return true;
+                }
+            }
+            return false;
+}
+bool CatchingPointRef::allpointsget(){
+    for (int i = 0; i < M_points; i++){
+        bool thispointget = false;
+        const Stadium::PlayerCont::const_iterator end = M_stadium.players().end();
+            for ( Stadium::PlayerCont::const_iterator p = M_stadium.players().begin();
+                  p != end;
+                  ++p )
+            {
+                if ( ! (*p)->isEnabled() ) continue;
+                if ((*p)->pos() == PVector(M_points_offsets[i].first,M_points_offsets[i].second)){
+                    thispointget = true;
+                }
+            }
+            if (thispointget == false){
+                return false;
+            }
+    }
+    return true;
+}
+void
+CatchingPointRef::analyse()
+{
+    const ServerParam & param = ServerParam::instance();
+
+    if ( ! param.catchingpointMode() )
+    {
+        return;
+    }
+
+    if ( (param.catchingpointMaxTrials() > 0 && M_episode > param.catchingpointMaxTrials()) ||
+         (param.catchingpointMaxFrames() > 0 && M_stadium.time() > param.catchingpointMaxFrames()) )
+    {
+        M_stadium.sendRefereeAudio( doneMsg );
+        M_stadium.finalize("CATCHINGPOINT complete");
+        return;
+    }
+
+    // Resets the episode after waiting for one frame
+    if ( M_episode_over_time > 0 )
+    {
+      if ( M_stadium.time() - M_episode_over_time >= 1 ) {
+        M_stadium.changePlayMode( PM_BeforeKickOff );
+        M_stadium.changePlayMode( PM_PlayOn );
+        M_episode_over_time = -1;
+        char possessionMsg[32];
+        sprintf(possessionMsg, "%s", inGameMsg);
+        //TODO:add points_offsets
+        M_stadium.sendRefereeAudio(possessionMsg);
+      }
+      return;
+    }
+
+    if ( M_stadium.playmode() == PM_PlayOn )
+    {
+        if ( outofchanges())
+        {
+            char outMsg[32];
+            sprintf(outMsg, "%s", oocMsg);
+            logEpisode( outMsg );
+            M_stadium.sendRefereeAudio( outMsg );
+            M_episode_over_time = M_stadium.time();
+        }
+        else if (allpointsget() )
+        {
+            logEpisode( apgMsg );
+            M_stadium.sendRefereeAudio( apgMsg );
+            M_episode_over_time = M_stadium.time();
+        }
+        else if ( (param.hfoMaxUntouchedTime() > 0 && M_untouched_time > param.hfoMaxUntouchedTime()) ||
+                  (param.hfoMaxTrialTime() > 0 && M_stadium.time() - M_time > param.hfoMaxTrialTime()) )
+        {
+            logEpisode( ootMsg );
+            M_stadium.sendRefereeAudio( ootMsg );
+            M_episode_over_time = M_stadium.time();
+        }
+        else
+        {
+            char possessionMsg[32];
+            sprintf(possessionMsg, "%s", inGameMsg);
+            M_stadium.sendRefereeAudio(possessionMsg);
+        }
+    }
+}
+
+void
+CatchingPointRef::playModeChange( PlayMode pm )
+{
+    if ( ServerParam::instance().hfoMode() )
+    {
+      if ( pm == PM_PlayOn )
+      {
+        if ( M_episode == 0 )
+        {
+          // Seed the RNG needed to reset the field
+          if ( ServerParam::instance().randomSeed() >= 0 )
+          {
+            int seed = ServerParam::instance().randomSeed();
+            std::cout << "CatchingPointRef using seed: " << seed << std::endl;
+            M_rng.seed(seed);
+          }
+          else
+          {
+            int seed = irand(RAND_MAX);
+            std::cout << "CatchingPointRef using Random Seed: " << seed << std::endl;
+            M_rng.seed(seed);
+          }
+          const Stadium::PlayerCont::const_iterator end = M_stadium.players().end();
+          for ( Stadium::PlayerCont::const_iterator p = M_stadium.players().begin();
+                p != end;
+                ++p )
+          {
+            if ( ! (*p)->isEnabled() ) continue;
+
+            if ( (*p)->side() == LEFT )
+            {
+                ++M_catchers;
+                ++M_points;
+            }
+            else if ( (*p)->side() == RIGHT )
+            {
+              ++M_catchers;
+              ++M_points;
+            }
+          }
+          logHeader();
+        }
+        M_episode++;
+        resetField();
+      }
+    }
+}
+
+void
+CatchingPointRef::logHeader()
+{
+    if ( M_stadium.logger().catchingpointLog() )
+    {
+        M_stadium.logger().catchingpointLog()
+            << "# Catchers: " << M_catchers << '\n'
+            << "# Points:  " << M_points << '\n'
+            << "# Description of Fields:\n"
+            << "# 1) Episode number\n"
+            << "# 2) Start time in simulator steps (100ms)\n"
+            << "# 3) End time in simulator steps (100ms)\n"
+            << "# 4) Duration in simulator steps (100ms)\n"
+            << "# 5) Episode result\n"
+            << "#\n"
+            << std::flush;
+    }
+}
+
+void
+CatchingPointRef::logEpisode( const char * endCond )
+{
+    if ( M_stadium.logger().catchingpointLog() )
+    {
+        M_stadium.logger().catchingpointLog() << M_episode << "\t"
+                                    << M_time << "\t"
+                                    << M_stadium.time() << "\t"
+                                    << M_stadium.time() - M_time << "\t"
+                                    << endCond
+                                    << std::endl;
+    }
+}
+
+void
+CatchingPointRef::resetField()
+{
+    double pitch_length = ServerParam::instance().PITCH_LENGTH;
+    double half_pitch_length = 0.5 * pitch_length;
+    double pitch_width = ServerParam::instance().PITCH_WIDTH;
+    double ball_x = -1;
+    double ball_y = 0;
+//    M_stadium.logger().hfoLog() << ServerParam::instance().hfoMinBallY() << "\t"
+//                                << min_ball_y << "\t"
+//                                << ServerParam::instance().hfoMaxBallY() << "\t"
+//                                << max_ball_y << "\t"
+//                                << ball_y << std::endl;
+    // std::cout << min_ball_y << ", " << max_ball_y << ": " << ball_y << std::endl;
+    // std::cerr << min_ball_y << ", " << max_ball_y << ": " << ball_y << std::endl;
+    // std::clog << min_ball_y << ", " << max_ball_y << ": " << ball_y << std::endl;
+
+    // double ball_y = drand(-.4 * pitch_width, .4 * pitch_width, M_rng);
+    M_stadium.placeBall( NEUTRAL, PVector(ball_x, ball_y) );
+    boost::variate_generator<boost::mt19937&, boost::uniform_int<> >
+        gen(M_rng, boost::uniform_int<>());
+    std::random_shuffle( M_offsets.begin(), M_offsets.end(), gen);
+    const Stadium::PlayerCont::iterator end = M_stadium.players().end();
+    for ( Stadium::PlayerCont::iterator p = M_stadium.players().begin();
+          p != end;
+          ++p )
+    {
+        if ( ! (*p)->isEnabled() ) continue;
+        double x, y,point_x,point_y;
+        x = drand(.4 * pitch_length, .5 * pitch_length, M_rng);
+        y = drand(-.4 * pitch_width, .4 * pitch_width, M_rng);
+        (*p)->place( PVector( x, y ) );
+        point_x = drand(.4 * pitch_length, .5 * pitch_length, M_rng);
+        point_y = drand(-.4 * pitch_width, .4 * pitch_width, M_rng);
+        M_points_offsets.push_back(std::make_pair(point_x, point_y));
+    }
+
+    M_stadium.recoveryPlayers();
+    M_time = M_stadium.time();
 }

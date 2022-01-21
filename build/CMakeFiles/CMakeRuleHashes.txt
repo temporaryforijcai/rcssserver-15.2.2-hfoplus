@@ -1,0 +1,5 @@
+# Hashes of file build rules.
+eb728c0153c46179f99e9bfee6892f71 ../src/coach_lang_tok.cpp
+69d21d3508b535d43c9a3ccb9d7f87e8 ../src/coach_lang_tok_lex.yy.c
+51b88c021d4eb9d4b37486584b1a79d2 ../src/player_command_tok.cpp
+0d67dd16acd44cb3910ddb9adff84dd6 ../src/player_command_tok_lex.yy.c

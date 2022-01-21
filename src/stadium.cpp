@@ -110,6 +110,7 @@ Stadium::Stadium()
 
     // !!! registration order is very important !!!
     // TODO: fix dependencies among referees.
+    M_referees.push_back( new CatchingPointRef( *this ) );
     M_referees.push_back( new HFORef( *this ) );
     M_referees.push_back( new TimeRef( *this ) );
     M_referees.push_back( new BallStuckRef( *this ) );
@@ -1119,7 +1120,7 @@ Stadium::kickOff()
 {
     const ServerParam & SP = ServerParam::instance();
 
-    if ( SP.keepAwayMode() || SP.hfoMode() )
+    if ( SP.keepAwayMode() || SP.hfoMode() || SP.catchingpointMode())
     {
         changePlayMode( PM_PlayOn );
         return;

@@ -264,6 +264,16 @@ const std::string ServerParam::HFO_LOG_FIXED_NAME = "rcssserver";
 const int ServerParam::HFO_LOG_FIXED = false;
 const int ServerParam::HFO_LOG_DATED = true;
 
+const int ServerParam::CATCHINGPOINT_LOGGING = true;
+#ifdef RCSS_WIN
+const std::string ServerParam::CATCHINGPOINT_LOG_DIR = ".\\";
+#else
+const std::string ServerParam::CATCHINGPOINT_LOG_DIR = "./";
+#endif
+const std::string ServerParam::CATCHINGPOINT_LOG_FIXED_NAME = "rcssserver";
+const int ServerParam::CATCHINGPOINT_LOG_FIXED = false;
+const int ServerParam::CATCHINGPOINT_LOG_DATED = true;
+
 const int ServerParam::KAWAY_START = -1;
 
 const int ServerParam::POINT_TO_BAN = 5;
@@ -861,6 +871,20 @@ ServerParam::addParams()
     addParam( "hfo_min_ball_pos_y", M_hfo_min_ball_pos_y, "", 9 );
     addParam( "hfo_max_ball_pos_y", M_hfo_max_ball_pos_y, "", 9 );
 
+    addParam( "catchingpoint", M_catchingpoint, "", 9 );
+    addParam( "catchingpoint_max_trial_time", M_catchingpoint_max_trial_time, "", 9 );
+    addParam( "catchingpoint_max_untouched_time", M_catchingpoint_max_untouched_time, "", 9 );
+    addParam( "catchingpoint_logging", M_catchingpoint_logging, "", 9 );
+    addParam( "catchingpoint_log_dir",
+              rcss::conf::makeSetter( this, &ServerParam::setCATCHINGPOINTLogDir ),
+              rcss::conf::makeGetter( M_catchingpoint_log_dir ),
+              "", 9 );
+    addParam( "catchingpoint_log_fixed_name", M_catchingpoint_log_fixed_name, "", 9 );
+    addParam( "catchingpoint_log_fixed", M_catchingpoint_log_fixed, "", 9 );
+    addParam( "catchingpoint_log_dated", M_catchingpoint_log_dated, "", 9 );
+    addParam( "catchingpoint_max_trials", M_catchingpoint_max_trials, "", 9 );
+    addParam( "catchingpoint_max_frames", M_catchingpoint_max_frames, "", 9 );
+
     addParam( "nr_normal_halfs",
               rcss::conf::makeSetter( this, &ServerParam::setNrNormalHalfs ),
               rcss::conf::makeGetter( M_nr_normal_halfs ),
@@ -1114,6 +1138,12 @@ ServerParam::setHFOLogDir( std::string str )
 }
 
 void
+ServerParam::setCATCHINGPOINTLogDir( std::string str )
+{
+    M_catchingpoint_log_dir = tildeExpand( str );
+}
+
+void
 ServerParam::setCoachMsgFile( std::string str )
 {
     M_coach_msg_file = tildeExpand( str );
@@ -1217,6 +1247,12 @@ ServerParam::setDefaults()
     M_hfo_max_trials = -1;
     M_hfo_max_frames = -1;
     M_hfo_offense_on_ball = false;
+
+    M_catchingpoint = false;
+    M_catchingpoint_max_trial_time = 1000;
+    M_catchingpoint_max_untouched_time = 100;
+    M_catchingpoint_max_trials = -1;
+    M_catchingpoint_max_frames = -1;
 
     M_corner_kick_margin = CORNER_KICK_MARGIN;
     M_offside_active_area_size = OFFSIDE_ACTIVE_AREA_SIZE;
@@ -1341,6 +1377,12 @@ ServerParam::setDefaults()
     M_hfo_log_fixed_name = HFO_LOG_FIXED_NAME;
     M_hfo_log_fixed = HFO_LOG_FIXED;
     M_hfo_log_dated = HFO_LOG_DATED;
+
+    M_catchingpoint_logging = CATCHINGPOINT_LOGGING;
+    M_catchingpoint_log_dir = CATCHINGPOINT_LOG_DIR;
+    M_catchingpoint_log_fixed_name = CATCHINGPOINT_LOG_FIXED_NAME;
+    M_catchingpoint_log_fixed = CATCHINGPOINT_LOG_FIXED;
+    M_catchingpoint_log_dated = CATCHINGPOINT_LOG_DATED;
 
     M_keepaway_start = KAWAY_START;
 

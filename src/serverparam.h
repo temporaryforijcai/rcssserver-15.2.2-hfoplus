@@ -260,6 +260,12 @@ private:
     static const int HFO_LOG_FIXED;
     static const int HFO_LOG_DATED;
 
+    static const int CATCHINGPOINT_LOGGING;
+    static const std::string CATCHINGPOINT_LOG_DIR;
+    static const std::string CATCHINGPOINT_LOG_FIXED_NAME;
+    static const int CATCHINGPOINT_LOG_FIXED;
+    static const int CATCHINGPOINT_LOG_DATED;
+
     static const int KAWAY_START;
 
     static const int POINT_TO_BAN;
@@ -429,6 +435,11 @@ private:
     double M_hfo_max_ball_pos_x; /* Governs the initialization x-position of ball */
     double M_hfo_min_ball_pos_y; /* Governs the initialization y-position of ball */
     double M_hfo_max_ball_pos_y; /* Governs the initialization y-position of ball */
+    bool M_catchingpoint; /* CATCHINGPOINT mode on/off */
+    int M_catchingpoint_max_trial_time; /* Max time an CATCHINGPOINT trial can last */
+    int M_catchingpoint_max_untouched_time; /* Max time ball can go untouched in CATCHINGPOINT */
+    int M_catchingpoint_max_trials; /* Quit after this many CATCHINGPOINT trials */
+    int M_catchingpoint_max_frames; /* Quit after this many CATCHINGPOINT frames */
     int M_port; /* port number */
     int M_coach_port; /* coach port number */
     int M_olcoach_port; /* online coach port number */
@@ -549,6 +560,12 @@ private:
     bool M_hfo_log_fixed;
     bool M_hfo_log_dated;
 
+    bool M_catchingpoint_logging;
+    std::string M_catchingpoint_log_dir;
+    std::string M_catchingpoint_log_fixed_name;
+    bool M_catchingpoint_log_fixed;
+    bool M_catchingpoint_log_dated;
+
     int M_keepaway_start;
 
     int M_point_to_ban;
@@ -662,6 +679,7 @@ private:
     void setGameLogDir( std::string str );
     void setKAwayLogDir( std::string str );
     void setHFOLogDir( std::string str );
+    void setCATCHINGPOINTLogDir( std::string str );
 
     void setCoachMsgFile( std::string str );
 
@@ -776,6 +794,12 @@ public:
     double hfoMaxBallX() const { return M_hfo_max_ball_pos_x; }
     double hfoMinBallY() const { return M_hfo_min_ball_pos_y; }
     double hfoMaxBallY() const { return M_hfo_max_ball_pos_y; }
+
+    bool catchingpointMode() const { return M_catchingpoint; }
+    int catchingpointMaxTrialTime() const { return M_catchingpoint_max_trial_time; }
+    int catchingpointMaxUntouchedTime() const { return M_catchingpoint_max_untouched_time; }
+    int catchingpointMaxTrials() const { return M_catchingpoint_max_trials; }
+    int catchingpointMaxFrames() const { return M_catchingpoint_max_frames; }
 
     double cornerKickMargin() const { return M_corner_kick_margin; }
     double offsideActiveArea() const { return M_offside_active_area_size; }
@@ -911,6 +935,12 @@ public:
     const std::string & hfoLogFixedName() const { return M_hfo_log_fixed_name; }
     bool hfoLogFixed() const { return M_hfo_log_fixed; }
     bool hfoLogDated() const { return M_hfo_log_dated; }
+
+    bool catchingpointLogging() const { return M_catchingpoint_logging; }
+    const std::string & catchingpointLogDir() const { return M_catchingpoint_log_dir; }
+    const std::string & catchingpointLogFixedName() const { return M_catchingpoint_log_fixed_name; }
+    bool catchingpointLogFixed() const { return M_catchingpoint_log_fixed; }
+    bool catchingpointLogDated() const { return M_catchingpoint_log_dated; }
 
     int kawayStart() const { return M_keepaway_start; }
 

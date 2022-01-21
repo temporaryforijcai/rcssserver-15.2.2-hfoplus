@@ -169,6 +169,7 @@ private:
     int M_turn_neck_count;
     int M_change_view_count;
     int M_say_count;
+    int  M_catchpoint_count;
 
     Arm M_arm;
 
@@ -346,6 +347,7 @@ public:
     int turnNeckCount() const { return M_turn_neck_count; }
     int changeViewCount() const { return M_change_view_count; }
     int sayCount() const { return M_say_count; }
+    int catchpointCount() const { return M_catchpoint_count; }
 
     int attentiontoCount() const { return M_attentionto_count; }
 
@@ -430,6 +432,7 @@ private:
     void long_kick( double power, double dir );
     void goalieCatch( double dir );
     void say( std::string message );
+    void catchpoint();
     /*! This function is called in the begin of each cycle
       and in case a player sends a sense_body command. */
     void sense_body();

@@ -90,6 +90,8 @@ const std::string Logger::DEF_KAWAY_NAME = "incomplete";
 const std::string Logger::DEF_KAWAY_SUFFIX = ".kwy";
 const std::string Logger::DEF_HFO_NAME = "incomplete";
 const std::string Logger::DEF_HFO_SUFFIX = ".hfo";
+const std::string Logger::DEF_CATCHINGPOINT_NAME = "incomplete";
+const std::string Logger::DEF_CATCHINGPOINT_SUFFIX = ".catchingpoint";
 
 
 Logger::Logger( Stadium & stadium )
@@ -208,6 +210,15 @@ Logger::open()
          && ServerParam::instance().hfoLogging() )
     {
       if ( ! openHFOLog() )
+      {
+        return false;
+      }
+    }
+
+    if ( ServerParam::instance().catchingpointMode()
+         && ServerParam::instance().catchingpointLogging() )
+    {
+      if ( ! openCATCHINGPOINTLog() )
       {
         return false;
       }
@@ -514,6 +525,63 @@ Logger::openHFOLog()
     return true;
 }
 
+bool
+Logger::openCATCHINGPOINTLog()
+{
+    // create the log directory & file path string
+    try
+    {
+        boost::filesystem::path catchingpoint_log( ServerParam::instance().catchingpointLogDir()
+#if defined(BOOST_FILESYSTEM_VERSION) && BOOST_FILESYSTEM_VERSION == 2
+#  ifndef BOOST_FILESYSTEM_NO_DEPRECATED
+                                           , &boost::filesystem::native
+#  endif
+#endif
+                                           );
+        if ( ! boost::filesystem::exists( catchingpoint_log )
+             && ! boost::filesystem::create_directories( catchingpoint_log ) )
+        {
+            std::cerr << __FILE__ << ": " << __LINE__
+                      << ": can't create keepaway log directory '"
+                      << catchingpoint_log.BOOST_FS_DIRECTORY_STRING() << "'" << std::endl;
+            return false;
+        }
+
+        if ( ServerParam::instance().catchingpointLogFixed() )
+        {
+            catchingpoint_log /= ServerParam::instance().catchingpointLogFixedName() + Logger::DEF_CATCHINGPOINT_SUFFIX;
+        }
+        else
+        {
+            catchingpoint_log /= Logger::DEF_CATCHINGPOINT_NAME + Logger::DEF_CATCHINGPOINT_SUFFIX;
+        }
+
+        M_catchingpoint_log_name = catchingpoint_log.BOOST_FS_FILE_STRING();
+    }
+    catch ( std::exception & e )
+    {
+        std::cerr << __FILE__ << ": " << __LINE__
+                  << " Exception caught! " << e.what()
+                  << "\nCould not create keepaway log directory '"
+                  << ServerParam::instance().catchingpointLogDir()
+                  << "'" << std::endl;
+        return false;
+    }
+
+    // open the output file stream
+    M_catchingpoint_log.open( M_catchingpoint_log_name.c_str() );
+
+    if ( ! M_catchingpoint_log.is_open() )
+    {
+        std::cerr << __FILE__ << ": " << __LINE__
+                  << ": can't open keepaway_log_file " << M_catchingpoint_log_name
+                  << std::endl;
+        return false;
+    }
+
+    return true;
+}
+
 void
 Logger::closeGameLog()
 {
@@ -553,6 +621,16 @@ Logger::closeHFOLog()
     {
         M_hfo_log.flush();
         M_hfo_log.close();
+    }
+}
+
+void
+Logger::closeCATCHINGPOINTLog()
+{
+    if ( M_catchingpoint_log.is_open() )
+    {
+        M_catchingpoint_log.flush();
+        M_catchingpoint_log.close();
     }
 }
 

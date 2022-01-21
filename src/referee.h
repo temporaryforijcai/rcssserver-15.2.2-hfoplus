@@ -790,5 +790,52 @@ private:
 
 };
 
+/*--------------------------------------------------------*/
+
+class CatchingPointRef
+    : public Referee {
+private:
+
+    static const char * oocMsg;
+    static const char * ootMsg;
+    static const char * apgMsg;
+    static const char * doneMsg;
+    static const char * inGameMsg;
+    static const int TURNOVER_TIME;
+    int M_episode;
+    int M_catchers, M_points;
+    int M_time;
+    int M_untouched_time;
+    int M_episode_over_time;
+    boost::mt19937 M_rng;
+    std::vector<std::pair<int,int> > M_offsets;
+    std::vector<std::pair<double,double> > M_points_offsets;
+
+public:
+    CatchingPointRef( Stadium & stadium );
+
+    virtual
+    ~CatchingPointRef()
+      { }
+
+    virtual
+    void analyse();
+
+    virtual
+    void playModeChange( PlayMode pm );
+
+private:
+    bool outofchanges();
+
+    bool allpointsget();
+
+    void logHeader();
+
+    void logEpisode( const char *endCond );
+
+    void resetField();
+};
+
+/*--------------------------------------------------------*/
 
 #endif //REFEREE_H

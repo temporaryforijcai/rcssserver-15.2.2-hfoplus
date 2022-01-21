@@ -199,6 +199,7 @@ Player::Player( Stadium & stadium,
       M_turn_neck_count( 0 ),
       M_change_view_count( 0 ),
       M_say_count( 0 ),
+      M_catchpoint_count( 0 ),
       M_arm( ServerParam::instance().pointToBan(),
              ServerParam::instance().pointToDuration() ),
       M_attentionto_count( 0 ),
@@ -480,7 +481,8 @@ Player::parseMsg( char * msg,
     /** Call the PlayerCommandParser */
     if (
 #ifndef __CYGWIN__
-        M_parser.parse( command ) != 0
+        //M_parser.parse( command ) != 0
+        ! parseCommand( command )
 #else
         // Cygwin's flex/bison may cause problems.
         ! parseCommand( command )
@@ -531,6 +533,14 @@ Player::parseCommand( const char * command )
             buf += n_read;
 
             dash( power, dir );
+        }
+        else if ( ! std::strncmp( buf, "(catchpoint)", 12 ) )
+        {
+           // double power = 0.0, dir = 0.0;
+
+            buf += 12;
+            catchpoint();
+            //dash( power, dir );
         }
         else if ( ! std::strncmp( buf, "(turn_neck ", 11 ) )
         {
@@ -965,7 +975,13 @@ Player::send( const char * msg )
     }
 }
 
-
+void
+Player::catchpoint( )
+{
+    // std::cout<<"i am catchpoint: "<<M_catchpoint_count<<std::endl;
+    ++M_catchpoint_count;
+    dash( 0.0, 0.0 );
+}
 void
 Player::dash( double power )
 {

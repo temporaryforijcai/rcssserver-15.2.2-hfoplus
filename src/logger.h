@@ -58,6 +58,8 @@ private:
     static const std::string DEF_KAWAY_SUFFIX;
     static const std::string DEF_HFO_NAME;
     static const std::string DEF_HFO_SUFFIX;
+    static const std::string DEF_CATCHINGPOINT_NAME;
+    static const std::string DEF_CATCHINGPOINT_SUFFIX;
 
     rcss::InitObserverLogger * M_init_observer;
     rcss::ObserverLogger * M_observer;
@@ -68,11 +70,13 @@ private:
     std::string M_text_log_name;
     std::string M_kaway_log_name;
     std::string M_hfo_log_name;
+    std::string M_catchingpoint_log_name;
 
     std::ostream * M_game_log;
     std::ostream * M_text_log;
     std::ofstream M_kaway_log;  //!< file for keepaway log
     std::ofstream M_hfo_log;  //!< file for keepaway log
+    std::ofstream M_catchingpoint_log;  //!< file for catchingpoint log
 
 
     PlayMode M_playmode;
@@ -98,11 +102,13 @@ private:
     bool openTextLog();
     bool openKawayLog();
     bool openHFOLog();
+    bool openCATCHINGPOINTLog();
 
     void closeGameLog();
     void closeTextLog();
     void closeKawayLog();
     void closeHFOLog();
+    void closeCATCHINGPOINTLog();
 
     void renameLogs();
 
@@ -128,12 +134,18 @@ public:
           return M_hfo_log;
       }
 
+    std::ostream & catchingpointLog()
+      {
+          return M_catchingpoint_log;
+      }
+
     void flush()
       {
           if ( M_game_log ) M_game_log->flush();
           if ( M_text_log ) M_text_log->flush();
           M_kaway_log.flush();
           M_hfo_log.flush();
+          M_catchingpoint_log.flush();
       }
 
     void writeToGameLog( const char * str,
