@@ -4502,8 +4502,8 @@ CatchingPointRef::analyse()
             M_stadium.sendRefereeAudio( apgMsg );
             M_episode_over_time = M_stadium.time();
         }
-        else if ( (param.hfoMaxUntouchedTime() > 0 && M_untouched_time > param.hfoMaxUntouchedTime()) ||
-                  (param.hfoMaxTrialTime() > 0 && M_stadium.time() - M_time > param.hfoMaxTrialTime()) )
+        else if ( (param.catchingpointMaxUntouchedTime() > 0 && M_untouched_time > param.catchingpointMaxUntouchedTime()) ||
+                  (param.catchingpointMaxTrialTime() > 0 && M_stadium.time() - M_time > param.catchingpointMaxTrialTime()) )
         {
             logEpisode( ootMsg );
             M_stadium.sendRefereeAudio( ootMsg );
@@ -4521,7 +4521,7 @@ CatchingPointRef::analyse()
 void
 CatchingPointRef::playModeChange( PlayMode pm )
 {
-    if ( ServerParam::instance().hfoMode() )
+    if ( ServerParam::instance().catchingpointMode() )
     {
       if ( pm == PM_PlayOn )
       {
@@ -4630,9 +4630,11 @@ CatchingPointRef::resetField()
         double x, y,point_x,point_y;
         x = drand(.4 * pitch_length, .5 * pitch_length, M_rng);
         y = drand(-.4 * pitch_width, .4 * pitch_width, M_rng);
+        //M_stadium.logger().catchingpointLog() << "agent: "<<x <<"   "<< y;
         (*p)->place( PVector( x, y ) );
         point_x = drand(.4 * pitch_length, .5 * pitch_length, M_rng);
         point_y = drand(-.4 * pitch_width, .4 * pitch_width, M_rng);
+        //M_stadium.logger().catchingpointLog() << "point: "<<point_x <<"   "<< point_y;
         M_points_offsets.push_back(std::make_pair(point_x, point_y));
     }
 
